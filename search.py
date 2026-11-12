@@ -2,63 +2,71 @@
 
 
 def number_lines(lines):
-    """Return (line_number, text) tuples, counting from 1.
-
+    """
     >>> number_lines(['Library hours', '', 'Open late'])
     [(1, 'Library hours'), (2, ''), (3, 'Open late')]
     >>> number_lines([])
     []
     """
-    pass
+    return list(enumerate(lines, 1))
 
 
 def matching_lines(lines, query):
-    """Return numbered lines containing query, ignoring case.
-
-    An empty query returns no matches. Preserve the original text and numbers.
-
+    """
     >>> matching_lines(['Library hours', '', 'LIBRARY cafe'], 'library')
     [(1, 'Library hours'), (3, 'LIBRARY cafe')]
-    >>> matching_lines(['Library hours'], '')
+    >>> matching_lines(['cat', 'catalog'], '')
     []
-    >>> matching_lines(['Library hours'], 'pool')
+    >>> matching_lines(['a.b', 'axb'], '.')
+    [(1, 'a.b')]
+    >>> matching_lines(['a  b', 'a b'], 'a b')
+    [(2, 'a b')]
+    >>> matching_lines([], 'x')
     []
     """
-    pass
+    if query == '':
+        return []
+    q = query.lower()
+    return [(num, text) for num, text in number_lines(lines)
+            if q in text.lower()]
 
 
 def group_matches(documents, query):
-    """Return one list of matching lines per document, including empty lists.
-
-    >>> group_matches([['Library map'], ['Pool hours'], ['LIBRARY cafe']], 'library')
-    [[(1, 'Library map')], [], [(1, 'LIBRARY cafe')]]
-    >>> group_matches([], 'library')
+    """
+    >>> documents = [['Library map', 'Open late'], ['Pool hours'], ['Cafe', 'LIBRARY events']]
+    >>> group_matches(documents, 'library')
+    [[(1, 'Library map')], [], [(2, 'LIBRARY events')]]
+    >>> group_matches([[], ['x']], 'x')
+    [[], [(1, 'x')]]
+    >>> group_matches([], 'x')
     []
     """
-    pass
+    return [matching_lines(doc, query) for doc in documents]
 
 
 def flatten_matches(names, groups):
-    """Return (filename, line_number, text) tuples in file and line order.
-
-    names and groups have equal lengths. Filenames are unique.
-
-    >>> flatten_matches(['a.txt', 'b.txt'], [[(2, 'Map')], []])
-    [('a.txt', 2, 'Map')]
+    """
+    >>> names = ['campus.txt', 'pool.txt', 'events.txt']
+    >>> groups = [[(1, 'Library map')], [], [(2, 'LIBRARY events')]]
+    >>> flatten_matches(names, groups)
+    [('campus.txt', 1, 'Library map'), ('events.txt', 2, 'LIBRARY events')]
+    >>> flatten_matches(['a.txt'], [[(1, 'x'), (2, 'x')]])
+    [('a.txt', 1, 'x'), ('a.txt', 2, 'x')]
     >>> flatten_matches([], [])
     []
     """
-    pass
+    return [(name, num, text)
+            for name, group in zip(names, groups)
+            for num, text in group]
 
 
 def match_counts(names, groups):
-    """Return a dictionary of filename: number of matching lines, including zeros.
-
-    names and groups have equal lengths. Filenames are unique.
-
-    >>> match_counts(['a.txt', 'b.txt'], [[(2, 'Map')], []])
-    {'a.txt': 1, 'b.txt': 0}
+    """
+    >>> names = ['campus.txt', 'pool.txt', 'events.txt']
+    >>> groups = [[(1, 'Library map')], [], [(2, 'LIBRARY events')]]
+    >>> match_counts(names, groups)
+    {'campus.txt': 1, 'pool.txt': 0, 'events.txt': 1}
     >>> match_counts([], [])
     {}
     """
-    pass
+    return {name: len(group) for name, group in zip(names, groups)}
